@@ -10,6 +10,7 @@ builder.Services.AddMongoConfig(builder.Configuration);
 builder.Services.AddDependencyInjectionConfig();
 builder.Services.AddJwtConfig(builder.Configuration);
 builder.Services.AddHealthCheckConfig();
+builder.Services.AddRateLimiterConfig();
 
 var app = builder.Build();
 
@@ -23,6 +24,7 @@ app.UseSwaggerUI(c =>
 });
 
 app.UseCors("AllowAll");
+app.UseRateLimiter();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
