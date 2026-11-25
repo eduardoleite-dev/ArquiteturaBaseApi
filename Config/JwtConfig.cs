@@ -1,4 +1,5 @@
 using System.Text;
+using ArquiteturaBaseApi.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
@@ -8,6 +9,8 @@ public static class JwtConfig
 {
     public static IServiceCollection AddJwtConfig(this IServiceCollection services, IConfiguration configuration)
     {
+        services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
+
         var secretKey = configuration["JwtSettings:SecretKey"] 
                         ?? configuration["JwtSettings__SecretKey"]
                         ?? throw new InvalidOperationException("A chave secreta JWT não foi configurada em JwtSettings:SecretKey ou JwtSettings__SecretKey.");

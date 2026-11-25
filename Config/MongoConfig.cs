@@ -1,3 +1,4 @@
+using ArquiteturaBaseApi.Settings;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
 
@@ -7,6 +8,8 @@ public static class MongoConfig
 {
     public static IServiceCollection AddMongoConfig(this IServiceCollection services, IConfiguration configuration)
     {
+        services.Configure<MongoDbSettings>(configuration.GetSection("MongoDbSettings"));
+
         var connectionString = configuration["ConnectionStrings__MongoDB"] 
                                ?? configuration["ConnectionStrings:MongoDB"] 
                                ?? configuration["MongoDbSettings:ConnectionString"] 
