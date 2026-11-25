@@ -1,32 +1,28 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using ArquiteturaBaseApi.DTOs;
-using ArquiteturaBaseApi.Models;
 using ArquiteturaBaseApi.Repositories.Interfaces;
 using ArquiteturaBaseApi.Services.Interfaces;
+using ArquiteturaBaseApi.Settings;
 
 namespace ArquiteturaBaseApi.Services;
 
 public class AuthService : IAuthService
 {
-    private readonly IConfiguration _configuration;
     private readonly IUserRepository _userRepository;
+    private readonly JwtSettings _jwtSettings;
 
-    public AuthService(IConfiguration configuration, IUserRepository userRepository)
+    public AuthService(IUserRepository userRepository, IOptions<JwtSettings> jwtSettings)
     {
-        _configuration = configuration;
         _userRepository = userRepository;
+        _jwtSettings = jwtSettings.Value;
     }
 
     public async Task<LoginResponseDto?> AuthenticateAsync(string username, string password)
     {
-        if (username == "usuarioMaster" && password == "62270208")
-        {
-            return GenerateJwtToken("usuarioMaster", "Master");
-        }
-
         var user = await _userRepository.GetByUsernameOrEmailAsync(username);
         
         if (user == null) return null; 
@@ -41,9 +37,11 @@ public class AuthService : IAuthService
 
     private LoginResponseDto GenerateJwtToken(string username, string userId)
     {
-        var secretKey = _configuration["JwtSettings__SecretKey"] 
-                        ?? _configuration["JwtSettings:SecretKey"] 
-                        ?? "ChavePadraoSuperSecretaFallback123456789";
+        var secretKey = _jwtSettings.SecretKey;
+        if (string.IsNullOrWhiteSpace(secretKey))
+        {
+            throw new InvalidOperationException("A chave secreta JWT não foi configurada em JwtSettings:SecretKey.");
+        }
 
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(secretKey);
