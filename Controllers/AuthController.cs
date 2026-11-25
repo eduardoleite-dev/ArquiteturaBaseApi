@@ -16,9 +16,14 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
     {
-        var authResult = await _authService.AuthenticateAsync(request.Username, request.Password);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var authResult = await _authService.AuthenticateAsync(request.Username, request.Password, cancellationToken);
         return Ok(authResult);
     }
 }

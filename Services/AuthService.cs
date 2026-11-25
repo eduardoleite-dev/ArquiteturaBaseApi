@@ -22,16 +22,16 @@ public class AuthService : IAuthService
         _jwtSettings = jwtSettings.Value;
     }
 
-    public async Task<LoginResponseDto> AuthenticateAsync(string username, string password)
+    public async Task<LoginResponseDto> AuthenticateAsync(string username, string password, CancellationToken cancellationToken = default)
     {
-        var user = await _userRepository.GetByUsernameOrEmailAsync(username);
+        var user = await _userRepository.GetByUsernameOrEmailAsync(username, cancellationToken);
         
         if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
         {
             throw new UnauthorizedException("Credenciais inválidas.");
         }
 
-        await _userRepository.UpdateLastLoginAsync(user.Id, DateTime.UtcNow);
+        await _userRepository.UpdateLastLoginAsync(user.Id, DateTime.UtcNow, cancellationToken);
 
         return GenerateJwtToken(user.Name, user.Id);
     }
