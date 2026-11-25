@@ -1,3 +1,5 @@
+using ArquiteturaBaseApi.Repositories;
+using ArquiteturaBaseApi.Repositories.Interfaces;
 using ArquiteturaBaseApi.Services;
 using ArquiteturaBaseApi.Services.Interfaces;
 
@@ -7,6 +9,7 @@ public static class DependencyInjectionConfig
 {
     public static IServiceCollection AddDependencyInjectionConfig(this IServiceCollection services)
     {
+        services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IMongoTestService, MongoTestService>();
         services.AddScoped<IAuthService, AuthService>();
         return services;

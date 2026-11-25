@@ -2,9 +2,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
-using MongoDB.Driver;
 using ArquiteturaBaseApi.DTOs;
 using ArquiteturaBaseApi.Models;
+using ArquiteturaBaseApi.Repositories.Interfaces;
 using ArquiteturaBaseApi.Services.Interfaces;
 
 namespace ArquiteturaBaseApi.Services;
@@ -12,12 +12,12 @@ namespace ArquiteturaBaseApi.Services;
 public class AuthService : IAuthService
 {
     private readonly IConfiguration _configuration;
-    private readonly IMongoCollection<User> _usersCollection;
+    private readonly IUserRepository _userRepository;
 
-    public AuthService(IConfiguration configuration, IMongoDatabase database)
+    public AuthService(IConfiguration configuration, IUserRepository userRepository)
     {
         _configuration = configuration;
-        _usersCollection = database.GetCollection<User>("Users");
+        _userRepository = userRepository;
     }
 
     public async Task<LoginResponseDto?> AuthenticateAsync(string username, string password)
@@ -27,15 +27,14 @@ public class AuthService : IAuthService
             return GenerateJwtToken("usuarioMaster", "Master");
         }
 
-        var user = await _usersCollection.Find(u => u.Email == username || u.Name == username).FirstOrDefaultAsync();
+        var user = await _userRepository.GetByUsernameOrEmailAsync(username);
         
         if (user == null) return null; 
 
         bool isPasswordValid = BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
         if (!isPasswordValid) return null; 
 
-        var update = Builders<User>.Update.Set(u => u.LastLoginAt, DateTime.UtcNow);
-        await _usersCollection.UpdateOneAsync(u => u.Id == user.Id, update);
+        await _userRepository.UpdateLastLoginAsync(user.Id, DateTime.UtcNow);
 
         return GenerateJwtToken(user.Name, user.Id);
     }
