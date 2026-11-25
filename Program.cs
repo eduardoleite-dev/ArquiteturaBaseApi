@@ -18,6 +18,7 @@ builder.Services.AddSwaggerConfig();
 builder.Services.AddMongoConfig(builder.Configuration);
 builder.Services.AddDependencyInjectionConfig();
 builder.Services.AddJwtConfig(builder.Configuration);
+builder.Services.AddHealthCheckConfig();
 
 var app = builder.Build();
 
@@ -35,5 +36,6 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthChecks("/health");
 app.Urls.Add("http://0.0.0.0:8080");
 app.Run();
