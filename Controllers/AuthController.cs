@@ -15,14 +15,10 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
-   [HttpPost("login")]
+    [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         var authResult = await _authService.AuthenticateAsync(request.Username, request.Password);
-        
-        if (authResult == null)
-            return Unauthorized(new { message = "Credenciais inválidas" });
-
         return Ok(authResult);
     }
 }

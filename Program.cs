@@ -14,13 +14,14 @@ builder.Services.AddCors(options =>
     });
 });
 
-
 builder.Services.AddSwaggerConfig();
 builder.Services.AddMongoConfig(builder.Configuration);
 builder.Services.AddDependencyInjectionConfig();
 builder.Services.AddJwtConfig(builder.Configuration);
 
 var app = builder.Build();
+
+app.UseMiddlewareConfig();
 
 app.UseSwagger();
 app.UseSwaggerUI(c =>

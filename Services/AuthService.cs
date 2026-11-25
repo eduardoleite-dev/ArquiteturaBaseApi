@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using ArquiteturaBaseApi.Common.Exceptions;
 using ArquiteturaBaseApi.DTOs;
 using ArquiteturaBaseApi.Repositories.Interfaces;
 using ArquiteturaBaseApi.Services.Interfaces;
@@ -21,14 +22,14 @@ public class AuthService : IAuthService
         _jwtSettings = jwtSettings.Value;
     }
 
-    public async Task<LoginResponseDto?> AuthenticateAsync(string username, string password)
+    public async Task<LoginResponseDto> AuthenticateAsync(string username, string password)
     {
         var user = await _userRepository.GetByUsernameOrEmailAsync(username);
         
-        if (user == null) return null; 
-
-        bool isPasswordValid = BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
-        if (!isPasswordValid) return null; 
+        if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+        {
+            throw new UnauthorizedException("Credenciais inválidas.");
+        }
 
         await _userRepository.UpdateLastLoginAsync(user.Id, DateTime.UtcNow);
 
@@ -51,7 +52,7 @@ public class AuthService : IAuthService
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new[] 
-            { 
+            {
                 new Claim(ClaimTypes.Name, username),
                 new Claim(ClaimTypes.NameIdentifier, userId)
             }),
