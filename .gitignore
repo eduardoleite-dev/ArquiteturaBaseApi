@@ -1,0 +1,21 @@
+## Build and output directories
+bin/
+obj/
+publish/
+*.zip
+
+## Visual Studio & VS Code files
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Local configuration files
+appsettings.Local.json
+appsettings.Development.local.json
+
+## OS generated files
+.DS_Store
+Thumbs.db
