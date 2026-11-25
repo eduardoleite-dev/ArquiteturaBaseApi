@@ -23,9 +23,9 @@ public class HelloWorldController : ControllerBase
 
     [Authorize]
     [HttpGet("privado")]
-    public IActionResult GetPrivate()
+    public async Task<IActionResult> GetPrivate(CancellationToken cancellationToken)
     {
-        var dbStatus = _mongoTestService.TestConnection();
+        var dbStatus = await _mongoTestService.TestConnectionAsync(cancellationToken);
         return Ok(new { 
             message = "Hello World Autenticado!",
             mongoStatus = dbStatus
