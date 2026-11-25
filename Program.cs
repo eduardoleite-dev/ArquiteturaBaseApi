@@ -4,16 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-});
-
+builder.Services.AddCorsConfig();
 builder.Services.AddSwaggerConfig();
 builder.Services.AddMongoConfig(builder.Configuration);
 builder.Services.AddDependencyInjectionConfig();
