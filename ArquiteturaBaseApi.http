@@ -1,43 +1,130 @@
-@ArquiteturaBaseApi_HostAddress = http://localhost:5159
-
-### Health Check
-GET {{ArquiteturaBaseApi_HostAddress}}/health
-Accept: application/json
-
-### Hello World - Público
-GET {{ArquiteturaBaseApi_HostAddress}}/api/HelloWorld/publico
-Accept: application/json
-
-### Autenticação - Login
-# @name login
-POST {{ArquiteturaBaseApi_HostAddress}}/api/Auth/login
-Content-Type: application/json
-
-{
-  "username": "admin",
-  "password": "Password123!"
-}
-
-### Hello World - Privado (Requer JWT)
-@authToken = {{login.response.body.token}}
-
-GET {{ArquiteturaBaseApi_HostAddress}}/api/HelloWorld/privado
-Authorization: Bearer {{authToken}}
-Accept: application/json
-
-### Usuários - Cadastrar Novo Usuário (Requer JWT)
-POST {{ArquiteturaBaseApi_HostAddress}}/api/User
-Authorization: Bearer {{authToken}}
-Content-Type: application/json
-
-{
-  "name": "Novo Usuário",
-  "email": "novousuario@email.com",
-  "password": "senha123",
-  "levelAccess": 0
-}
-
-### Usuários - Listar Paginado (Requer JWT)
-GET {{ArquiteturaBaseApi_HostAddress}}/api/User?pageNumber=1&pageSize=10
-Authorization: Bearer {{authToken}}
+@ArquiteturaBaseApi_HostAddress = http://localhost:5159
+
+
+
+### Health Check
+
+GET {{ArquiteturaBaseApi_HostAddress}}/health
+
+Accept: application/json
+
+
+
+### Hello World - Público
+
+GET {{ArquiteturaBaseApi_HostAddress}}/api/HelloWorld/publico
+
+Accept: application/json
+
+
+
+### Autenticação - Login
+
+# @name login
+
+POST {{ArquiteturaBaseApi_HostAddress}}/api/Auth/login
+
+Content-Type: application/json
+
+
+
+{
+
+  "username": "admin",
+
+  "password": "Password123!"
+
+}
+
+
+
+### Hello World - Privado (Requer JWT)
+
+@authToken = {{login.response.body.token}}
+
+
+
+GET {{ArquiteturaBaseApi_HostAddress}}/api/HelloWorld/privado
+
+Authorization: Bearer {{authToken}}
+
+Accept: application/json
+
+
+
+### Usuários - Cadastrar Novo Usuário (Requer JWT)
+
+# @name createUser
+POST {{ArquiteturaBaseApi_HostAddress}}/api/User
+
+Authorization: Bearer {{authToken}}
+
+Content-Type: application/json
+
+
+
+{
+
+  "name": "Novo Usuário",
+
+  "email": "novousuario@email.com",
+
+  "password": "senha123",
+
+  "levelAccess": 0
+
+}
+
+
+
+### Usuários - Listar Paginado (Requer JWT)
+
+GET {{ArquiteturaBaseApi_HostAddress}}/api/User?pageNumber=1&pageSize=10
+
+Authorization: Bearer {{authToken}}
+
+Accept: application/json
+
+
+
+### Usuários - Buscar por ID (Requer JWT)
+
+@userId = {{createUser.response.body.id}}
+
+GET {{ArquiteturaBaseApi_HostAddress}}/api/User/{{userId}}
+
+Authorization: Bearer {{authToken}}
+
+Accept: application/json
+
+
+
+### Usuários - Atualizar (Requer JWT)
+
+PUT {{ArquiteturaBaseApi_HostAddress}}/api/User/{{userId}}
+
+Authorization: Bearer {{authToken}}
+
+Content-Type: application/json
+
+
+
+{
+
+  "name": "Usuário Atualizado",
+
+  "email": "usuarioatualizado@email.com",
+
+  "levelAccess": 1
+
+}
+
+
+
+### Usuários - Deletar (Requer JWT)
+
+DELETE {{ArquiteturaBaseApi_HostAddress}}/api/User/{{userId}}
+
+Authorization: Bearer {{authToken}}
+
 Accept: application/json
