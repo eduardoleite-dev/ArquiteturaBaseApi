@@ -1,4 +1,5 @@
 using MongoDB.Driver;
+using ArquiteturaBaseApi.DTOs;
 using ArquiteturaBaseApi.Models;
 using ArquiteturaBaseApi.Repositories.Interfaces;
 
@@ -24,5 +25,19 @@ public class UserRepository : IUserRepository
     {
         var update = Builders<User>.Update.Set(u => u.LastLoginAt, lastLoginAt);
         await _usersCollection.UpdateOneAsync(u => u.Id == id, update, cancellationToken: cancellationToken);
+    }
+
+    public async Task<PagedResult<User>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+    {
+        var filter = Builders<User>.Filter.Empty;
+        var totalItems = await _usersCollection.CountDocumentsAsync(filter, cancellationToken: cancellationToken);
+
+        var items = await _usersCollection
+            .Find(filter)
+            .Skip((pageNumber - 1) * pageSize)
+            .Limit(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<User>(items, totalItems, pageNumber, pageSize);
     }
 }
