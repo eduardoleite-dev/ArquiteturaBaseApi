@@ -12,6 +12,7 @@ public static class DependencyInjectionConfig
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IMongoTestService, MongoTestService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IUserService, UserService>();
         return services;
     }
 }

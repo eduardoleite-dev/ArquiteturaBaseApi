@@ -14,6 +14,11 @@ public class UserRepository : IUserRepository
         _usersCollection = database.GetCollection<User>("Users");
     }
 
+    public async Task CreateAsync(User user, CancellationToken cancellationToken = default)
+    {
+        await _usersCollection.InsertOneAsync(user, cancellationToken: cancellationToken);
+    }
+
     public async Task<User?> GetByUsernameOrEmailAsync(string usernameOrEmail, CancellationToken cancellationToken = default)
     {
         return await _usersCollection
