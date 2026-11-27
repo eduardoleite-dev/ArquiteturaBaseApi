@@ -45,6 +45,18 @@ public class UserService : IUserService
         return MapToUserResponse(user);
     }
 
+    public async Task<UserResponse> GetByIdAsync(string id, CancellationToken cancellationToken = default)
+    {
+        var user = await _userRepository.GetByIdAsync(id, cancellationToken);
+        if (user == null)
+        {
+            _logger.LogWarning("Usuário não encontrado com Id: {UserId}", id);
+            throw new NotFoundException("Usuário não encontrado.");
+        }
+
+        return MapToUserResponse(user);
+    }
+
     public async Task<PagedResult<UserResponse>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
         pageNumber = pageNumber < 1 ? 1 : pageNumber;
@@ -62,6 +74,51 @@ public class UserService : IUserService
             pagedUsers.PageNumber,
             pagedUsers.PageSize
         );
+    }
+
+    public async Task<UserResponse> UpdateAsync(string id, UpdateUserRequest request, CancellationToken cancellationToken = default)
+    {
+        var user = await _userRepository.GetByIdAsync(id, cancellationToken);
+        if (user == null)
+        {
+            _logger.LogWarning("Tentativa de atualizar usuário inexistente. Id: {UserId}", id);
+            throw new NotFoundException("Usuário não encontrado.");
+        }
+
+        if (!string.Equals(user.Email, request.Email, StringComparison.OrdinalIgnoreCase))
+        {
+            var existingUserWithEmail = await _userRepository.GetByUsernameOrEmailAsync(request.Email, cancellationToken);
+            if (existingUserWithEmail != null && existingUserWithEmail.Id != id)
+            {
+                _logger.LogWarning("Tentativa de atualizar usuário {UserId} com e-mail já existente: {Email}", id, request.Email);
+                throw new ConflictException("Já existe um usuário cadastrado com este e-mail.");
+            }
+        }
+
+        user.Name = request.Name;
+        user.Email = request.Email;
+        user.LevelAccess = request.LevelAccess;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await _userRepository.UpdateAsync(user, cancellationToken);
+
+        _logger.LogInformation("Usuário atualizado com sucesso. Id: {UserId}", user.Id);
+
+        return MapToUserResponse(user);
+    }
+
+    public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
+    {
+        var user = await _userRepository.GetByIdAsync(id, cancellationToken);
+        if (user == null)
+        {
+            _logger.LogWarning("Tentativa de deletar usuário inexistente. Id: {UserId}", id);
+            throw new NotFoundException("Usuário não encontrado.");
+        }
+
+        await _userRepository.DeleteAsync(id, cancellationToken);
+
+        _logger.LogInformation("Usuário removido com sucesso. Id: {UserId}", id);
     }
 
     private static UserResponse MapToUserResponse(User user)
