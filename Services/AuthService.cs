@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using ArquiteturaBaseApi.Common.Exceptions;
@@ -15,11 +16,16 @@ public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
     private readonly JwtSettings _jwtSettings;
+    private readonly ILogger<AuthService> _logger;
 
-    public AuthService(IUserRepository userRepository, IOptions<JwtSettings> jwtSettings)
+    public AuthService(
+        IUserRepository userRepository,
+        IOptions<JwtSettings> jwtSettings,
+        ILogger<AuthService> logger)
     {
         _userRepository = userRepository;
         _jwtSettings = jwtSettings.Value;
+        _logger = logger;
     }
 
     public async Task<LoginResponseDto> AuthenticateAsync(string username, string password, CancellationToken cancellationToken = default)
@@ -28,10 +34,13 @@ public class AuthService : IAuthService
         
         if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
         {
+            _logger.LogWarning("Tentativa de login com credenciais inválidas para o usuário: {Username}", username);
             throw new UnauthorizedException("Credenciais inválidas.");
         }
 
         await _userRepository.UpdateLastLoginAsync(user.Id, DateTime.UtcNow, cancellationToken);
+
+        _logger.LogInformation("Usuário {Username} (Id: {UserId}) autenticado com sucesso.", user.Name, user.Id);
 
         return GenerateJwtToken(user.Name, user.Id);
     }
