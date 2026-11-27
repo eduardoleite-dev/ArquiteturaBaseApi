@@ -19,6 +19,13 @@ public class UserRepository : IUserRepository
         await _usersCollection.InsertOneAsync(user, cancellationToken: cancellationToken);
     }
 
+    public async Task<User?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
+    {
+        return await _usersCollection
+            .Find(u => u.Id == id)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<User?> GetByUsernameOrEmailAsync(string usernameOrEmail, CancellationToken cancellationToken = default)
     {
         return await _usersCollection
@@ -26,10 +33,20 @@ public class UserRepository : IUserRepository
             .FirstOrDefaultAsync(cancellationToken);
     }
 
+    public async Task UpdateAsync(User user, CancellationToken cancellationToken = default)
+    {
+        await _usersCollection.ReplaceOneAsync(u => u.Id == user.Id, user, cancellationToken: cancellationToken);
+    }
+
     public async Task UpdateLastLoginAsync(string id, DateTime lastLoginAt, CancellationToken cancellationToken = default)
     {
         var update = Builders<User>.Update.Set(u => u.LastLoginAt, lastLoginAt);
         await _usersCollection.UpdateOneAsync(u => u.Id == id, update, cancellationToken: cancellationToken);
+    }
+
+    public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
+    {
+        await _usersCollection.DeleteOneAsync(u => u.Id == id, cancellationToken: cancellationToken);
     }
 
     public async Task<PagedResult<User>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
